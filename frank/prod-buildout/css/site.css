@@ -1,0 +1,77 @@
+html {
+  height: 100%; }
+
+body {
+  margin: 0;
+  padding: 2em 5em;
+  background: white;
+  color: #666666;
+  font: 100%/1.5 Verdana, sans-serif; }
+
+#header h1 {
+  font-size: 30px;
+  line-height: 14px; }
+
+#header h2 {
+  font-size: 20px;
+  line-height: 10px; }
+
+a img {
+  border: 0px;
+  color: #551A8B; }
+
+form {
+  margin: 0px;
+  padding: 0px;
+  display: inline; }
+
+#header {
+  margin-bottom: 10px;
+  padding-top: 30px;
+  padding-bottom: 20px; }
+
+#wrapper {
+  width: 750px;
+  margin-left: auto;
+  margin-right: auto; }
+
+.button {
+  background-color: #551A8B;
+  display: inline;
+  color: white;
+  font-weight: bold;
+  -moz-border-radius: 5px;
+  -webkit-border-radius: 5px;
+  -khtml-border-radius: 5px;
+  border-radius: 5px;
+  padding: 10px;
+  font-size: 14px; }
+
+.button:hover {
+  background-color: #666666;
+  cursor: pointer; }
+
+#posturl {
+  background-color: #FEFFE5;
+  border: 2px solid #EBBA95;
+  color: #C98660;
+  -moz-border-radius: 5px;
+  -webkit-border-radius: 5px;
+  -khtml-border-radius: 5px;
+  border-radius: 5px;
+  margin-top: 20px;
+  padding: 20px; }
+
+#posturl h2 {
+  line-height: 12px;
+  font-size: 12px;
+  font-weight: bold;
+  margin: 0px; }
+
+.copyable {
+  font: 12px monaco;
+  border: 1px solid #cccccc;
+  background-color: white;
+  padding: 7px;
+  margin-top: 10px;
+  margin-bottom: 10px; }
