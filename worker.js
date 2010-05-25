@@ -11,13 +11,19 @@ var validhash = '.[0-9A-Za-z_\-]*';
 var buffersize = 15;
 var feeds = {};
 
-sys.puts("The uuid is: " +uuid.getUuid());
 
 //Create a feed
 server.get("__create", function (req, res, match) {
-   //grab the hash from the query string 
-   feeds[hash] = new lpb.LongPollingBuffer(buffersize);
-   return {status : "success"} 
+   //grab the hash from the query string
+   var hash;
+   if(url.parse(req.url,true).hasOwnProperty('query') && url.parse(req.url,true).query.hasOwnProperty('hash')){
+       hash = parseInt(url.parse(req.url,true)['query']['hash']);
+        feeds[hash] = new lpb.LongPollingBuffer(buffersize);
+        return {status : "success"} 
+   }
+   else {
+       return {status:'error', message:'must provide a hash for the feed to be created'};
+   } 
 });
 
 //Get updates on a feed
@@ -25,7 +31,7 @@ server.get(new RegExp("^/latest/("+validhash+")$"), function (req, res, match) {
     
     //first check to verify that the feed exists
     if(!feeds.hasOwnProperty(match)){
-        return {error:'true', message:'invalid feed identifier'};
+        return {status:'error', message:'invalid feed identifier'};
     }
     
     buffer = feeds[match];
