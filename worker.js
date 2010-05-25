@@ -15,8 +15,9 @@ sys.puts("The uuid is: " +uuid.getUuid());
 
 //Create a feed
 server.get("__create", function (req, res, match) {
-   var hash = uuid.getUuid(); 
-   feeds[hash] = new lpb.LongPollingBuffer(buffersize); 
+   //grab the hash from the query string 
+   feeds[hash] = new lpb.LongPollingBuffer(buffersize);
+   return {status : "success"} 
 });
 
 //Get updates on a feed
