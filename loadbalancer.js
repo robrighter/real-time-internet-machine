@@ -12,10 +12,9 @@ exports.LoadBalancer = function(workerslist){
     }
 }
 
-
 //TEST
-// var lb = new LoadBalancer(['one','two','three','four','five']);
-// for(var i = 0; i< 20; i++)
+//var lb = new exports.LoadBalancer(['one','two','three','four','five']);
+//for(var i = 0; i< 20; i++)
 //  sys.puts(lb.getNextWorkerServer());
   
 
