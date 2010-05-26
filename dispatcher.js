@@ -4,29 +4,27 @@ var querystring = require('querystring');
 var uuid = require('./lib/uuid');
 var server = noderouter.getServer();
 var url = require('url');
+var LoadBalancer = new require('loadbalancer').LoadBalancer;
 
 var validhash = '.[0-9A-Za-z_\-]*';
-var buffersize = 15;
-
+var loadbalancer = new LoadBalancer([
+    "http://localhost:8081",
+    "http://localhost:8082",
+    "http://localhost:8083",
+    "http://localhost:8084",
+]);
 
 
 // STORAGE /////////////////////////////////////////////////////////////////////////////////////////
-var workers = [
-    "http://localhost:8081", //0
-    "http://localhost:8082", //1
-    "http://localhost:8083", //2
-    "http://localhost:8084", //3
-];
-
 var feeds = {
-    a03902-834938-akejhne : 0,
-    b03902-834938-akejhne : 0,
-    c03902-834938-akejhne : 0,
-    d03902-834938-akejhne : 0,
+    a03902-834938-akejhne : "http://localhost:8081",
+    b03902-834938-akejhne : "http://localhost:8081",
+    c03902-834938-akejhne : "http://localhost:8081",
+    d03902-834938-akejhne : "http://localhost:8081",
 };
 
 var lookupWorkerURLByHash = function(hash){
-    return workers[feeds[hash]];
+    return feeds[hash];
 };
 
 
@@ -41,14 +39,14 @@ var bootstrap = function(){
 // WORKER CONTROL /////////////////////////////////////////////////////////////////////////////////
 var addFeedToClient = function(url, hash){
     //TODO: Call out to the client and setup the feed
+    feeds[hash] = url;
 };
 
 
 // ROUTING  ////////////////////////////////////////////////////////////////////////////////////////
 //Create a feed
 server.get("createfeed", function (req, res, match) {
-   //send it out to one of the workers to be created
-   addFeedToClient(workers[0], uuid.getUuid()); 
+   addFeedToClient(loadbalancer.getNextWorkerServer(), uuid.getUuid()); 
 });
 
 //Dispatch long polling to the correct worker
