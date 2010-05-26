@@ -1,5 +1,4 @@
 var sys = require('sys');
-var fs = require('fs');
 var noderouter = require('./lib/node-router');
 var querystring = require('querystring');
 var lpb = require('./lib/longpollingbuffer');
@@ -8,33 +7,56 @@ var server = noderouter.getServer();
 var url = require('url');
 
 var validhash = '.[0-9A-Za-z_\-]*';
-var buffersize = 15;
+var buffersize = 40;
 var feeds = {};
 
 
 //Create a feed
-server.get("__create", function (req, res, match) {
+server.post("/__create", function (req, res, poststring) {
+   res.sendHeader(200,{"Content-Type": "application/json"});
    //grab the hash from the query string
-   var hash;
-   if(url.parse(req.url,true).hasOwnProperty('query') && url.parse(req.url,true).query.hasOwnProperty('hash')){
-       hash = parseInt(url.parse(req.url,true)['query']['hash']);
-        feeds[hash] = new lpb.LongPollingBuffer(buffersize);
-        return {status : "success"} 
+   postvals = querystring.parse(poststring);
+   if(postvals.hasOwnProperty('hash')){
+       feeds[postvals.hash] = new lpb.LongPollingBuffer(buffersize);
+       res.write('{"status" : "success", "feed" : "'+postvals.hash+'" }' );
    }
    else {
-       return {status:'error', message:'must provide a hash for the feed to be created'};
+       res.write("{'status':'error', 'message':'must provide a hash for the feed to be created'}" );
    } 
-});
+   res.end(); 
+}, "form-url-encode");
+
+
+//insert data into a feed
+server.post(new RegExp("^/insert/("+validhash+")$"), function(req,res,hash,poststring){
+    
+    sys.puts("hash = " + hash);
+    sys.puts("postJSON = " + sys.inspect(querystring.parse(poststring)));
+    
+    res.sendHeader(200,{"Content-Type": "application/json"});
+    //if the feed exists go ahead and insert the item into the buffer
+    if(feeds.hasOwnProperty(hash)){
+         toinsert = cleaninsert(querystring.parse(poststring));
+         buffer = feeds[hash].push(toinsert);
+         res.write("{'status':'success', 'inserted': "+JSON.stringify(toinsert)+"}");   
+    }
+    else{
+        res.write("{'status':'error', 'message':'invalid feed identifier'}");
+    }
+    res.end();
+    
+}, "form-url-encode");
+
 
 //Get updates on a feed
-server.get(new RegExp("^/latest/("+validhash+")$"), function (req, res, match) {
+server.get(new RegExp("^/latest/("+validhash+")$"), function (req, res, hash) {
     
     //first check to verify that the feed exists
-    if(!feeds.hasOwnProperty(match)){
+    if(!feeds.hasOwnProperty(hash)){
         return {status:'error', message:'invalid feed identifier'};
     }
     
-    buffer = feeds[match];
+    buffer = feeds[hash];
     
     var thesince;
     if(url.parse(req.url,true).hasOwnProperty('query') && url.parse(req.url,true).query.hasOwnProperty('since')){
@@ -52,24 +74,10 @@ server.get(new RegExp("^/latest/("+validhash+")$"), function (req, res, match) {
     });  
 });
 
-//insert data into a feed
-server.post(new RegExp("^/insert/("+validhash+")$"), function(req,res,match){
-    
-    //first check to verify that the feed exists
-    if(!feeds.hasOwnProperty(match)){
-        return {error:'true', message:'invalid feed identifier'};
-    }
-    
-    ///SOMETHING WRONG HERE WITH THE DEFINISHION OF MATCH THIS NEEDS TO BE FIXED
-    toinsert = cleanit(querystring.parse(match));
-    
-    buffer = feeds[match];
-    sys.puts("ABOUT TO INSERT THE FOLLOWING RECORD:\n" + JSON.stringify(toinsert));
-    buffer.push(toinsert);
-}, "form-url-encode");
 
+var cleaninsert = function(toinsert){
+    //this is where we trim down the item to be within the terms of use
+    return toinsert;
+}
 
-
-
-
-server.listen(8080);
+server.listen(8081);
