@@ -1,5 +1,6 @@
 var sys = require('sys');
 var noderouter = require('./lib/node-router');
+var rest = require('./lib/restler/restler');
 var querystring = require('querystring');
 var uuid = require('./lib/uuid');
 var server = noderouter.getServer();
@@ -64,11 +65,15 @@ server.get(new RegExp("^/latest/("+validhash+")$"), function (req, res, hash) {
           return {status:'error', message:'invalid feed identifier'};
 });
 
-//Dispatch insert to the correct worker
-server.post(new RegExp("^/insert/("+validhash+")$"), function(req,res,hash){
+//proxy insert to the correct worker
+server.post(new RegExp("^/insert/("+validhash+")$"), function(req,res,hash,poststring){
     if(url = lookupWorkerURLByHash(hash)){
-        res.redirect(  url +"/insert/"+hash);
-        res.end();
+        url = "http://localhost:8080";
+        rest.post( url +"/insert/"+hash, { data: querystring.parse(poststring)}).addListener('complete', function(data, response) {
+            res.sendHeader(200,{"Content-Type": "application/json"});
+            res.write(data);
+            res.end();
+        });  
     }
     else{
         res.sendHeader(200,{"Content-Type": "application/json"});
@@ -80,4 +85,4 @@ server.post(new RegExp("^/insert/("+validhash+")$"), function(req,res,hash){
 
 // INITIALIZATION //////////////////////////////////////////////////////////////////////////////////
 bootstrap();
-server.listen(8080);
+server.listen(8001);
