@@ -6,13 +6,11 @@ var uuid = require('./lib/uuid');
 var server = noderouter.getServer();
 var url = require('url');
 var LoadBalancer = new require('./loadbalancer').LoadBalancer;
+var purl = require('url');
 
 var validhash = '.[0-9A-Za-z_\-]*';
 var loadbalancer = new LoadBalancer([
-    "http://localhost:8081",
-    "http://localhost:8082",
-    "http://localhost:8083",
-    "http://localhost:8084",
+    "http://localhost:8081"
 ]);
 
 
@@ -37,38 +35,51 @@ var lookupWorkerURLByHash = function(hash){
 // BOOTSTRAP /////////////////////////////////////////////////////////////////////////////////////
 var bootstrap = function(){
     for(var key in feeds){
-        addFeedToClient( lookupWorkerURLByHash(key), key);
+        addFeedToClient( lookupWorkerURLByHash(key), key, function(data){});
     }  
 };
 
 
 // WORKER CONTROL /////////////////////////////////////////////////////////////////////////////////
-var addFeedToClient = function(url, hash){
+var addFeedToClient = function(url, hash, callback){
     //TODO: Call out to the client and setup the feed
-    
-    feeds[hash] = url;
-    return {'status':'success', 'feed':hash}
+    rest.post( url +"/__create", { data: { "hash" : hash }}).addListener('complete', function(data, response) {
+        feeds[hash] = url;
+        callback(data);
+    });
 };
 
 
 // ROUTING  ////////////////////////////////////////////////////////////////////////////////////////
 //Create a feed
 server.get("/createfeed", function (req, res, match) {
-   return addFeedToClient(loadbalancer.getNextWorkerServer(), uuid.getUuid()); 
+   addFeedToClient(loadbalancer.getNextWorkerServer(), uuid.getUuid(), function(data){
+       res.sendHeader(200,{"Content-Type": "application/json"});
+       res.write(JSON.stringify(data));
+       res.end();
+   }); 
 });
 
 //Dispatch long polling to the correct worker
 server.get(new RegExp("^/latest/("+validhash+")$"), function (req, res, hash) {
-      if(url = lookupWorkerURLByHash(hash))
-          res.redirect( url +"/latest/"+hash);
-      else
+      if(url = lookupWorkerURLByHash(hash)){
+          var thesince;
+          if(purl.parse(req.url,true).hasOwnProperty('query') && purl.parse(req.url,true).query.hasOwnProperty('since')){
+              thesince = parseInt(purl.parse(req.url,true)['query']['since']);
+          }
+          else {
+              thesince = -1;
+          }
+          res.redirect( url +"/latest/"+hash +"?since="+thesince);
+      }
+      else{
           return {status:'error', message:'invalid feed identifier'};
+      }       
 });
 
 //proxy insert to the correct worker
 server.post(new RegExp("^/insert/("+validhash+")$"), function(req,res,hash,poststring){
     if(url = lookupWorkerURLByHash(hash)){
-        url = "http://localhost:8080";
         rest.post( url +"/insert/"+hash, { data: querystring.parse(poststring)}).addListener('complete', function(data, response) {
             res.sendHeader(200,{"Content-Type": "application/json"});
             res.write(data);

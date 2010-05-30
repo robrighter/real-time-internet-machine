@@ -20,7 +20,7 @@ server.post("/__create", function (req, res, poststring) {
    if(postvals.hasOwnProperty('hash')){
        feeds[postvals.hash] = { buffer : (new lpb.LongPollingBuffer(buffersize)), insertkey : uuid.getUuid() };
        feedcounter++;
-       res.write('{"status" : "success", "feedid" : "'+postvals.hash+'"  "insertkey" : "' + feeds[postvals.hash].insertkey +'"}' );
+       res.write('{"status" : "success", "feedid" : "'+postvals.hash+'" , "insertkey" : "' + feeds[postvals.hash].insertkey +'"}' );
    }
    else {
        res.write("{'status':'error', 'message':'must provide a hash for the feed to be created'}" );
@@ -32,15 +32,17 @@ server.post("/__create", function (req, res, poststring) {
 //insert data into a feed
 server.post(new RegExp("^/insert/("+validhash+")$"), function(req,res,hash,poststring){
     postvals = querystring.parse(poststring);
-    res.sendHeader(200,{"Content-Type": "application/json"});
+    res.sendHeader(200,{"Content-Type": "application/text"});
     //if the feed exists go ahead and insert the item into the buffer
     if((feeds.hasOwnProperty(hash) && postvals.hasOwnProperty('insertkey')) && (feeds[hash].insertkey == postvals['insertkey'])){
          var toinsert = cleaninsert(querystring.parse(poststring));
-         feeds[hash].buffer.push(toinsert);         
+         feeds[hash].buffer.push(toinsert);
+         sys.puts('HERE 1');         
          res.write("{'status':'success', 'inserted': "+JSON.stringify(toinsert)+"}");   
     }
     else{
-        res.write("{'status':'error', 'message':'invalid feed identifier'}");
+        sys.puts('HERE 2');
+        res.write('{"status" : "error", "message" : "invalid feed identifier"}');
     }
     res.end();
 }, "form-url-encode");
