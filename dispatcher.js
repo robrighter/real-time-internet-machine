@@ -7,6 +7,7 @@ var server = noderouter.getServer();
 var url = require('url');
 var LoadBalancer = new require('./loadbalancer').LoadBalancer;
 var purl = require('url');
+var commons = require('./commons');
 
 var validhash = '.[0-9A-Za-z_\-]*';
 var loadbalancer = new LoadBalancer([
@@ -54,22 +55,15 @@ var addFeedToClient = function(url, hash, callback){
 //Create a feed
 server.get("/createfeed", function (req, res, match) {
    addFeedToClient(loadbalancer.getNextWorkerServer(), uuid.getUuid(), function(data){
-       res.sendHeader(200,{"Content-Type": "application/json"});
-       res.write(JSON.stringify(data));
-       res.end();
+       sys.puts(data);
+       commons.writeToResponse(res, "application/json", JSON.stringify(data));
    }); 
 });
 
 //Dispatch long polling to the correct worker
 server.get(new RegExp("^/latest/("+validhash+")$"), function (req, res, hash) {
       if(url = lookupWorkerURLByHash(hash)){
-          var thesince;
-          if(purl.parse(req.url,true).hasOwnProperty('query') && purl.parse(req.url,true).query.hasOwnProperty('since')){
-              thesince = parseInt(purl.parse(req.url,true)['query']['since']);
-          }
-          else {
-              thesince = -1;
-          }
+          var thesince = parseInt(commons.getQueryParamValue(req.url, "since", "-1"));
           res.redirect( url +"/latest/"+hash +"?since="+thesince);
       }
       else{
@@ -81,15 +75,11 @@ server.get(new RegExp("^/latest/("+validhash+")$"), function (req, res, hash) {
 server.post(new RegExp("^/insert/("+validhash+")$"), function(req,res,hash,poststring){
     if(url = lookupWorkerURLByHash(hash)){
         rest.post( url +"/insert/"+hash, { data: querystring.parse(poststring)}).addListener('complete', function(data, response) {
-            res.sendHeader(200,{"Content-Type": "application/json"});
-            res.write(data);
-            res.end();
+            commons.writeToResponse(res, "application/json", JSON.stringify(data));
         });  
     }
     else{
-        res.sendHeader(200,{"Content-Type": "application/json"});
-        res.write("{'status':'error', 'message':'invalid feed identifier'}");
-        res.end();
+        commons.writeToResponse(res, "application/json", "{'status':'error', 'message':'invalid feed identifier'}");
     }
 }, "form-url-encode");
 
