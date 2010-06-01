@@ -59,10 +59,9 @@ server.get(new RegExp("^/latest/("+validhash+")$"), function (req, res, hash) {
     }
     buffer = feeds[hash].buffer;
     var thesince = parseInt(commons.getQueryParamValue(req.url, "since", "-1"));
-    sys.puts('The Since = ' +  thesince);
     buffer.addListenerForUpdateSince(thesince, function(data){
          var body = '['+data.map(JSON.stringify).join(',\n')+']';
-         commons.writeToResponse(res, "application/json", body );
+         commons.writeToResponse(res, "application/json", commons.convertToJSONPIfCallaback(req.url, body) );
     });  
 });
 

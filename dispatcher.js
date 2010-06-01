@@ -64,7 +64,9 @@ server.get("/createfeed", function (req, res, match) {
 server.get(new RegExp("^/latest/("+validhash+")$"), function (req, res, hash) {
       if(url = lookupWorkerURLByHash(hash)){
           var thesince = parseInt(commons.getQueryParamValue(req.url, "since", "-1"));
-          res.redirect( url +"/latest/"+hash +"?since="+thesince);
+          var thecallback = commons.getQueryParamValue(req.url, "callback", false);
+          var jsonpcallback = (thecallback) ? ("&callback=" + thecallback) : "";
+          res.redirect( url +"/latest/"+hash +"?since="+thesince + jsonpcallback);
       }
       else{
           return {status:'error', message:'invalid feed identifier'};

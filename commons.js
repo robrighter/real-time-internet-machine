@@ -18,5 +18,15 @@
         res.write(str);
         res.end(); 
     }
+    
+    exports.convertToJSONPIfCallaback = function(requesturl, jsonstring){
+        var thecallback;
+        if(thecallback = this.getQueryParamValue(requesturl, 'callback', false)){
+            return thecallback + "(" + jsonstring + ");";
+        }
+        else{
+            return jsonstring;
+        }
+    }
        
 })();
