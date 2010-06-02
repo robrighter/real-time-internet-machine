@@ -1,27 +1,19 @@
-#header
-  %h1 The Real Time Internet Machine
-  %p The Real Time Internet Machine provides a quick way to create a real time data feed of any information on your website. This service provides you with 2 things:
-  %ol
-    %li A url too which you will POST feed updates
-    %li A bit of javascript that to include in your web pages that will pull in the real time feed.
+!!! Strict
+%html
+  %head
+    %title Broadcast.IO
+    %link{:rel=>'stylesheet', :type=>'text/css', :href=>'/css/site.css'}
+    %script{:type=>'text/javascript', :src=>'http://www.google.com/jsapi'}
+    %script{:type=>'text/javascript', :charset=>'utf-8'}= "google.load('jquery', '1.4.2');"
+    %script{:type=>'text/javascript', :src=>'/js/site.js'}
+  %body
+    #wrapper
+      #header
+        %h1 Broadcast.io
+        %p The Real Time Internet Machine provides a quick way to create a real time data feed of any information on your website. This service provides you with 2 things:
+        %ol
+          %li A url too which you will POST feed updates
+          %li A bit of javascript that to include in your web pages that will pull in the real time feed.
+        #creator
+          %div{:class=>'button'}= 'Create a Real-Time Machine'
 
-#creator
-  %div{:class=>'button'}= 'Create a Machine'
-
-#posturl
-  %h2= 'Post to url:'
-  %div{:class=>'copyable'}= 'http://realtimeinternetmachine.com/98u3498rjdskfhsdf3983osidfkjlsfl'
-  %p= 'Each time you post to this url it will create a new item in the real time feed. You can post items to this url with up to 5 properties. Each property can be 300 characters long.'
-  %h2= 'Client Side Javascript:'
-  
-  <div class='copyable'>
-  &lt;script type="text/javascript"&gt;document.write(unescape("%3Cscript src='http://realtimeinternetmachine/client/08kljsd02lkjsdf.js' type='text/javascript'%3E%3C/script%3E"));&lt;/script&gt; 
-  &lt;script type="text/javascript"&gt; try {<br />
-  var rtm = realtimemachine(function(item){<br />
-  &nbsp;&nbsp;&nbsp;&nbsp;<strong>//Put your code here to insert your item into the DOM</strong><br />
-  });} catch(err) {}&lt;/script&gt;
-  </div>
-
-  %h2= 'Try it out:'
-  %p= 'NEED TO PUT A FULL LIVE WORKING DEMO HERE.'
-  

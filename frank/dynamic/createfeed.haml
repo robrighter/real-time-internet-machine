@@ -1,0 +1,23 @@
+#posturl
+  %h1= 'Adding items to your Real-Time Machine'
+  %h2= 'Post to url:'
+  %div{:class=>'copyable'}= 'http://{{domain}}/insert/{{feedid}}'
+  %p= 'Each time you post to this url it will create a new item in the real time feed. You can post items to this url with up to 5 properties. Each property can be 500 characters long.'
+  %p= 'In addition to the properties of your object, each POST must include an insertkey variable. The insert key for this feed is:'
+  %h2= 'Insert Key:'
+  %div{:class=>'copyable'}= '{{insertkey}}'
+
+  
+  %h1= 'Adding this Real-Time Machine to a web page'
+  %h2= 'Client Side Javascript:'
+  
+  <div class='copyable'>
+  &lt;script type="text/javascript"&gt;document.write(unescape("%3Cscript src='http://{{domain}}/client/{{feedid}}.js' type='text/javascript'%3E%3C/script%3E"));&lt;/script&gt; 
+  &lt;script type="text/javascript"&gt; try {<br />
+  var thertm = new realtimemachine(function(item){<br />
+  &nbsp;&nbsp;&nbsp;&nbsp;<strong>//Put your code here to insert your item into the DOM</strong><br />
+  });} catch(err) {}&lt;/script&gt;
+  </div>
+
+  %h2= 'Try it out:'
+  %p= 'NEED TO PUT A FULL LIVE WORKING DEMO HERE.'

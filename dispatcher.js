@@ -1,4 +1,5 @@
 var sys = require('sys');
+var fs = require('fs');
 var noderouter = require('./lib/node-router');
 var rest = require('./lib/restler/restler');
 var querystring = require('querystring');
@@ -8,6 +9,13 @@ var url = require('url');
 var LoadBalancer = new require('./loadbalancer').LoadBalancer;
 var purl = require('url');
 var commons = require('./commons');
+var _ = require('./lib/underscore')._;
+
+_.templateSettings = {
+  start       : '{{',
+  end         : '}}',
+  interpolate : /\{\{(.+?)\}\}/g
+};
 
 var validhash = '.[0-9A-Za-z_\-]*';
 var loadbalancer = new LoadBalancer([
@@ -54,9 +62,14 @@ var addFeedToClient = function(url, hash, callback){
 // ROUTING  ////////////////////////////////////////////////////////////////////////////////////////
 //Create a feed
 server.get("/createfeed", function (req, res, match) {
-   addFeedToClient(loadbalancer.getNextWorkerServer(), uuid.getUuid(), function(data){
-       sys.puts(data);
-       commons.writeToResponse(res, "application/json", JSON.stringify(data));
+   addFeedToClient(loadbalancer.getNextWorkerServer(), uuid.getUuid(), function(feedinfo){
+       fs.readFile('./frank/prod-buildout/createfeed.html', function (err, filecontents) {
+         if (err) throw err;
+         //var template = _.template(filecontents);
+         feedinfo['domain'] = 'localhost:8001';
+         commons.writeToResponse(res, "text/html", filecontents);//template(feedinfo));
+       });
+       
    }); 
 });
 
@@ -85,6 +98,10 @@ server.post(new RegExp("^/insert/("+validhash+")$"), function(req,res,hash,posts
     }
 }, "form-url-encode");
 
+//static files  ////////////////////////////////////////////////////////////////////////////////////////
+server.get('/css/site.css', noderouter.staticHandler('./frank/prod-buildout/css/site.css'));
+server.get('/js/site.js', noderouter.staticHandler('./frank/prod-buildout/js/site.js'));
+server.get('/', noderouter.staticHandler('./frank/prod-buildout/index.html'));
 
 // INITIALIZATION //////////////////////////////////////////////////////////////////////////////////
 bootstrap();

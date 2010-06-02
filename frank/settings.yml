@@ -54,4 +54,7 @@ dynamic_folder: dynamic
 templates:
     layouts:
         - name: layout
+          not: [feedprofile]
+        - name: ajax
+          only: [feedprofile]
 
