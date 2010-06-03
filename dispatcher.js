@@ -10,12 +10,9 @@ var LoadBalancer = new require('./loadbalancer').LoadBalancer;
 var purl = require('url');
 var commons = require('./commons');
 var _ = require('./lib/underscore')._;
+var PORT = 8001;
+var DOMAIN = 'localhost:8001';
 
-_.templateSettings = {
-  start       : '{{',
-  end         : '}}',
-  interpolate : /\{\{(.+?)\}\}/g
-};
 
 var validhash = '.[0-9A-Za-z_\-]*';
 var loadbalancer = new LoadBalancer([
@@ -65,9 +62,9 @@ server.get("/createfeed", function (req, res, match) {
    addFeedToClient(loadbalancer.getNextWorkerServer(), uuid.getUuid(), function(feedinfo){
        fs.readFile('./frank/prod-buildout/createfeed.html', function (err, filecontents) {
          if (err) throw err;
-         //var template = _.template(filecontents);
-         feedinfo['domain'] = 'localhost:8001';
-         commons.writeToResponse(res, "text/html", filecontents);//template(feedinfo));
+         feedinfo['domain'] = DOMAIN;
+         var template = _.template(filecontents.toString('utf8'));
+         commons.writeToResponse(res, "text/html", template(feedinfo));
        });
        
    }); 
@@ -105,4 +102,4 @@ server.get('/', noderouter.staticHandler('./frank/prod-buildout/index.html'));
 
 // INITIALIZATION //////////////////////////////////////////////////////////////////////////////////
 bootstrap();
-server.listen(8001);
+server.listen(PORT);

@@ -13,7 +13,7 @@
     };
     
     exports.writeToResponse = function(res, contenttype, str){
-        sys.puts("About to write a response of:\n" + str);
+        //sys.puts("About to write a response of:\n" + str);
         res.sendHeader(200,{"Content-Type": contenttype});
         res.write(str);
         res.end(); 
